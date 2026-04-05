@@ -164,7 +164,7 @@ function updateMarketSessionIndicator(){
   const ind=document.getElementById('market-session-indicator');
   if(ind){
     const active=getActiveSessions();
-    ind.style.background=active.length?var(--green):'var(--t3)';
+    ind.style.background=active.length?'var(--green)':'var(--t3)';
     ind.style.boxShadow=active.length?'0 0 8px var(--green)':'none';
   }
 }
