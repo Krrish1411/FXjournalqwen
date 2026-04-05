@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="amoled">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How to Use FX Journal — Complete Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../tools/tools.css">
+<style>
+  .guide-section { margin-bottom: 32px; }
+  .guide-title { font-size: 20px; font-weight: 700; color: var(--accent2); margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .guide-content { background: var(--card); border: 1px solid var(--border); border-radius: var(--r); padding: 20px; }
+  .guide-step { display: flex; gap: 16px; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+  .guide-step:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .step-number { width: 32px; height: 32px; background: var(--accent); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; }
+  .step-content { flex: 1; }
+  .step-title { font-size: 15px; font-weight: 600; color: var(--t0); margin-bottom: 6px; }
+  .step-desc { font-size: 13.5px; color: var(--t2); line-height: 1.6; }
+  .tip-box { background: var(--gold-d); border: 1px solid var(--gold); border-radius: var(--rs); padding: 14px 18px; margin-top: 16px; display: flex; gap: 12px; }
+  .tip-icon { font-size: 20px; flex-shrink: 0; }
+  .tip-content { flex: 1; }
+  .tip-title { font-size: 13px; font-weight: 600; color: var(--gold2); margin-bottom: 4px; }
+  .tip-text { font-size: 12.5px; color: var(--t2); line-height: 1.5; }
+  .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin-top: 16px; }
+  .feature-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--rs); padding: 16px; }
+  .feature-icon { font-size: 24px; margin-bottom: 8px; }
+  .feature-title { font-size: 14px; font-weight: 600; color: var(--t0); margin-bottom: 6px; }
+  .feature-desc { font-size: 12.5px; color: var(--t3); line-height: 1.5; }
+</style>
+</head>
+<body>
+
+<div id="toasts"></div>
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div class="logo-a">
+    <div class="logo-m">F</div>
+    <div>
+      <div class="logo-n">FX Journal</div>
+      <div class="logo-s">Trading Journal</div>
+    </div>
+  </div>
+  <a href="../index.html" class="nav-item"><span class="nav-ic">◈</span>Dashboard</a>
+  <div class="nav-sec">
+    <div class="nav-lbl">Tools</div>
+    <div class="nav-item" onclick="window.location.href='../tools/position-calculator.html'"><span class="nav-ic">📐</span>Position Calculator</div>
+    <div class="nav-item" onclick="window.location.href='../tools/gain-loss.html'"><span class="nav-ic">📊</span>Gain/Loss Calculator</div>
+    <div class="nav-item" onclick="window.location.href='../tools/market-hours.html'"><span class="nav-ic">🌍</span>Market Hours</div>
+  </div>
+  <div class="nav-sec">
+    <div class="nav-lbl">Resources</div>
+    <div class="nav-item active"><span class="nav-ic">📖</span>How to Use</div>
+  </div>
+  <div class="sb-foot">
+    <div class="user-row">
+      <div class="user-av">G</div>
+      <div>
+        <div class="user-nm">Guide</div>
+        <div class="user-rl">Getting Started</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div id="main">
+  <header class="topbar">
+    <div class="topbar-tl">Complete User Guide</div>
+    <div class="topbar-r">
+      <a href="../index.html" class="btn btn-p btn-sm">Go to Dashboard</a>
+    </div>
+  </header>
+
+  <div class="page active" style="padding:24px 32px;overflow-y:auto;max-width:1200px;margin:0 auto;width:100%">
+    
+    <!-- Hero Section -->
+    <div class="tool-info-card" style="margin-bottom:32px">
+      <div class="tool-info-icon">📚</div>
+      <div class="tool-info-content">
+        <h2 class="tool-info-title">Welcome to FX Journal — Your Complete Trading Companion</h2>
+        <p class="tool-info-desc">This comprehensive guide will walk you through every feature of FX Journal V2. Learn how to log trades, analyze performance, use our powerful tools, and ultimately improve your trading results through disciplined journaling.</p>
+        <div class="tool-info-why">
+          <strong>Pro Tip:</strong> Consistent journaling is the #1 habit of successful traders. Spend 10 minutes after each trade documenting your thoughts and review your journal weekly.
+        </div>
+      </div>
+    </div>
+
+    <!-- Getting Started -->
+    <div class="guide-section">
+      <div class="guide-title">🚀 Getting Started</div>
+      <div class="guide-content">
+        <div class="guide-step">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <div class="step-title">Set Up Your Account</div>
+            <div class="step-desc">Go to Settings and enter your trader name, strategy/style, timezone, and preferred currency. This personalizes your journal and ensures accurate time tracking for all your trades.</div>
+          </div>
+        </div>
+        <div class="guide-step">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <div class="step-title">Create Your First Account</div>
+            <div class="step-desc">Navigate to the Accounts section and add your trading account(s). You can track multiple accounts including live, demo, and prop firm accounts. Set starting balance, broker info, and any prop firm rules like daily drawdown limits.</div>
+          </div>
+        </div>
+        <div class="guide-step">
+          <div class="step-number">3</div>
+          <div class="step-content">
+            <div class="step-title">Configure Your Rules</div>
+            <div class="step-desc">In the Rules section, set your risk management rules: max daily loss, max trades per day, minimum R:R ratio, and allowed instruments. These rules will warn you when violated, helping maintain discipline.</div>
+          </div>
+        </div>
+        <div class="tip-box">
+          <div class="tip-icon">💡</div>
+          <div class="tip-content">
+            <div class="tip-title">Start Small</div>
+            <div class="tip-text">Don't feel overwhelmed by all features. Start by logging your next 5 trades with basic info (pair, direction, P&L). Gradually add more details as you get comfortable with the system.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Logging Trades -->
+    <div class="guide-section">
+      <div class="guide-title">📝 Logging Trades Effectively</div>
+      <div class="guide-content">
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="feature-icon">➕</div>
+            <div class="feature-title">Quick Add</div>
+            <div class="feature-desc">Click "+ Trade" button anywhere to quickly log a completed trade. Fill in essential fields first, then add details.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">📊</div>
+            <div class="feature-title">Auto Calculations</div>
+            <div class="feature-desc">P&L and R:R are automatically calculated from entry, exit, SL, and lot size. Just enter your prices!</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🎯</div>
+            <div class="feature-title">Grade Your Trades</div>
+            <div class="feature-desc">Rate each trade A+ to C based on execution quality, not outcome. A losing trade can be an A if well-executed.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">😌</div>
+            <div class="feature-title">Track Emotions</div>
+            <div class="feature-desc">Select emotions felt during the trade (Calm, FOMO, Confident, etc). Identify emotional patterns over time.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">📸</div>
+            <div class="feature-title">Add Screenshots</div>
+            <div class="feature-desc">Upload chart screenshots showing entry, exit, and analysis. Visual review accelerates learning.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">✅</div>
+            <div class="feature-title">Pre-Trade Checklist</div>
+            <div class="feature-desc">Complete your custom checklist before entering. Ensures you follow your process every time.</div>
+          </div>
+        </div>
+        
+        <div class="tip-box" style="margin-top:20px">
+          <div class="tip-icon">🎯</div>
+          <div class="tip-content">
+            <div class="tip-title">The 5-Minute Journal Routine</div>
+            <div class="tip-text">
+              <strong>Before Trade:</strong> Check your pre-trade checklist, note setup type and confluences.<br>
+              <strong>After Trade:</strong> Log results immediately while fresh. Add screenshot, grade execution, note emotions.<br>
+              <strong>Weekly Review:</strong> Every weekend, review all trades from the week. What patterns do you see?
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Using Analytics -->
+    <div class="guide-section">
+      <div class="guide-title">📈 Mastering the Analytics Dashboard</div>
+      <div class="guide-content">
+        <div class="guide-step">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <div class="step-title">Overview Tab</div>
+            <div class="step-desc">Your trading command center. Shows equity curve, win/loss distribution, key statistics (win rate, profit factor, expectancy), and performance by day of week. Use this for your weekly reviews.</div>
+          </div>
+        </div>
+        <div class="guide-step">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <div class="step-title">Pairs Analysis</div>
+            <div class="step-desc">See which currency pairs are most profitable for you. Focus on your best performers and consider reducing trades on underperforming pairs.</div>
+          </div>
+        </div>
+        <div class="guide-step">
+          <div class="step-number">3</div>
+          <div class="step-content">
+            <div class="step-title">Session Performance</div>
+            <div class="step-desc">Discover which trading sessions (London, NY, Tokyo, Sydney) work best for your style. Many traders find they perform better during specific sessions.</div>
+          </div>
+        </div>
+        <div class="guide-step">
+          <div class="step-number">4</div>
+          <div class="step-content">
+            <div class="step-title">Setup Analysis</div>
+            <div class="step-desc">Track performance by setup type (breakout, pullback, reversal, etc). Double down on what works, eliminate what doesn't.</div>
+          </div>
+        </div>
+        <div class="guide-step">
+          <div class="step-number">5</div>
+          <div class="step-content">
+            <div class="step-title">Emotion Tracking</div>
+            <div class="step-desc">Correlate emotions with performance. Do you lose more when anxious? Win more when patient? This insight is gold for improvement.</div>
+          </div>
+        </div>
+        <div class="guide-step">
+          <div class="step-number">6</div>
+          <div class="step-content">
+            <div class="step-title">Calendar View</div>
+            <div class="step-desc">Visual overview of trading days. Click any day to see all trades. Great for spotting overtrading or inconsistent activity patterns.</div>
+          </div>
+        </div>
+        
+        <div class="tip-box">
+          <div class="tip-icon">📊</div>
+          <div class="tip-content">
+            <div class="tip-title">Key Metrics to Watch</div>
+            <div class="tip-text">
+              <strong>Profit Factor:</strong> Aim for 1.5+. Gross wins ÷ gross losses.<br>
+              <strong>Win Rate:</strong> 40-60% is typical. Higher isn't always better if R:R suffers.<br>
+              <strong>Average R:R:</strong> Target 1:2 or better. Risk $1 to make $2+.<br>
+              <strong>Expectancy:</strong> Average $ won per trade. Positive = edge.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Journal Feature -->
+    <div class="guide-section">
+      <div class="guide-title">📒 Deep Dive: Journal Section</div>
+      <div class="guide-content">
+        <p style="font-size:14px;color:var(--t2);margin-bottom:20px;line-height:1.6">
+          The Journal section is where the magic happens. This is your trading diary — a place for deep reflection and continuous improvement.
+        </p>
+        
+        <div class="guide-step">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <div class="step-title">Access Your Trades</div>
+            <div class="step-desc">Left panel shows all trades. Filter by date range or status (All, Pending Journal, Completed). Click any trade to open journal view.</div>
+          </div>
+        </div>
+        <div class="guide-step">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <div class="step-title">Write Quality Analysis</div>
+            <div class="step-desc">Don't just write "good trade" or "bad trade". Be specific: What was your thesis? What worked? What didn't? Would you take this trade again? Why or why not?</div>
+          </div>
+        </div>
+        <div class="guide-step">
+          <div class="step-number">3</div>
+          <div class="step-content">
+            <div class="step-title">Link Related Trades</div>
+            <div class="step-desc">If you took multiple trades on the same setup or during the same session, link them together. Identify series and streaks.</div>
+          </div>
+        </div>
+        <div class="guide-step">
+          <div class="step-number">4</div>
+          <div class="step-content">
+            <div class="step-title">Create Notes & Folders</div>
+            <div class="step-desc">Use the Notes section to document strategies, market observations, lessons learned. Organize with folders like "Price Action", "ICT Concepts", "Psychology Notes".</div>
+          </div>
+        </div>
+        
+        <div class="tip-box">
+          <div class="tip-icon">✍️</div>
+          <div class="tip-content">
+            <div class="tip-title">Journal Prompts for Better Reflection</div>
+            <div class="tip-text">
+              • What was my emotional state before/during/after this trade?<br>
+              • Did I follow my trading plan exactly? If not, why?<br>
+              • What would I do differently if I could replay this trade?<br>
+              • What does this trade teach me about my strengths/weaknesses?<br>
+              • Is this trade part of a pattern I should be aware of?
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Using Tools -->
+    <div class="guide-section">
+      <div class="guide-title">🛠️ Trading Tools Suite</div>
+      <div class="guide-content">
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="feature-icon">📐</div>
+            <div class="feature-title">Position Size Calculator</div>
+            <div class="feature-desc">Calculate perfect position size based on account balance, risk %, and stop loss. Supports forex majors, XAUUSD, XAGUSD, BTCUSD, ETHUSD. Shows pip calculation for each instrument.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">📊</div>
+            <div class="feature-title">Gain/Loss Calculator</div>
+            <div class="feature-desc">Project potential profit/loss before entering. Enter entry, target, position size. See gross P&L, commission impact, and return percentage.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🌍</div>
+            <div class="feature-title">Market Hours Tracker</div>
+            <div class="feature-desc">Real-time session tracker for Sydney, Tokyo, London, NY. Auto-adjusts for DST. Select your timezone. Shows overlaps (high liquidity periods).</div>
+          </div>
+        </div>
+        
+        <div class="tip-box" style="margin-top:20px">
+          <div class="tip-icon">🎯</div>
+          <div class="tip-content">
+            <div class="tip-title">Daily Tool Workflow</div>
+            <div class="tip-text">
+              <strong>Before Trading:</strong> Check Market Hours to know which sessions are active. Use Gain/Loss Calculator to plan your trade.<br>
+              <strong>During Setup:</strong> Use Position Calculator to determine exact lot size based on your stop loss distance.<br>
+              <strong>Always:</strong> Never guess position sizes. Always calculate based on risk, not gut feeling.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Features -->
+    <div class="guide-section">
+      <div class="guide-title">🤖 AI-Powered Insights</div>
+      <div class="guide-content">
+        <div class="guide-step">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <div class="step-title">AI Analysis Report</div>
+            <div class="step-desc">Get comprehensive AI analysis of your trading. The AI examines all your trades, identifies patterns, calls out strengths and weaknesses, and provides personalized recommendations. Select time range and click "Generate Report".</div>
+          </div>
+        </div>
+        <div class="guide-step">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <div class="step-title">AI Chat Assistant</div>
+            <div class="step-desc">Chat with AI about your trading data. Ask questions like "What's my best setup?", "Am I overtrading?", "Analyze my last 10 trades". Get instant insights powered by your actual performance data.</div>
+          </div>
+        </div>
+        
+        <div class="tip-box">
+          <div class="tip-icon">🔑</div>
+          <div class="tip-content">
+            <div class="tip-title">Setting Up AI Features</div>
+            <div class="tip-text">
+              1. Get a free API key from ai.google.dev (Google Gemini)<br>
+              2. Go to AI Report page and paste your key<br>
+              3. Click "Save Key" and "Test" to verify connection<br>
+              4. Generate your first report!
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Best Practices -->
+    <div class="guide-section">
+      <div class="guide-title">⭐ Best Practices for Maximum Results</div>
+      <div class="guide-content">
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="feature-icon">📅</div>
+            <div class="feature-title">Daily Routine</div>
+            <div class="feature-desc">Log every trade same day. Review yesterday's trades each morning. Plan today's levels and setups.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">📆</div>
+            <div class="feature-title">Weekly Review</div>
+            <div class="feature-desc">Every weekend: Review all trades, check analytics, update notes, adjust rules if needed.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">📊</div>
+            <div class="feature-title">Monthly Analysis</div>
+            <div class="feature-desc">Deep dive into monthly stats. Compare to previous months. Set goals for next month.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">💾</div>
+            <div class="feature-title">Backup Regularly</div>
+            <div class="feature-desc">Download JSON backup weekly. Store in cloud drive. Never lose your valuable data.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🎯</div>
+            <div class="feature-title">Focus on Process</div>
+            <div class="feature-desc">Grade trades on execution, not outcome. Good process + time = profitability.</div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🧠</div>
+            <div class="feature-title">Track Psychology</div>
+            <div class="feature-desc">Your emotions and mindset matter more than indicators. Track them religiously.</div>
+          </div>
+        </div>
+        
+        <div class="tip-box" style="margin-top:20px">
+          <div class="tip-icon">🏆</div>
+          <div class="tip-content">
+            <div class="tip-title">The Path to Consistency</div>
+            <div class="tip-text">
+              <strong>Month 1-2:</strong> Focus on logging every trade completely. Build the habit.<br>
+              <strong>Month 3-4:</strong> Start reviewing analytics weekly. Identify 1-2 areas to improve.<br>
+              <strong>Month 5-6:</strong> Refine your edge based on data. Eliminate low-probability setups.<br>
+              <strong>Month 6+:</strong> You'll see clear patterns, know your edge, and trade with confidence backed by data.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Reference -->
+    <div class="guide-section">
+      <div class="guide-title">⚡ Quick Reference</div>
+      <div class="guide-content">
+        <table style="width:100%;font-size:13px">
+          <thead>
+            <tr>
+              <th style="padding:12px;text-align:left;color:var(--accent2)">Feature</th>
+              <th style="padding:12px;text-align:left;color:var(--accent2)">Purpose</th>
+              <th style="padding:12px;text-align:left;color:var(--accent2)">Frequency</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding:12px;border-top:1px solid var(--border)">Log Trades</td>
+              <td style="padding:12px;border-top:1px solid var(--border)">Record every trade with full details</td>
+              <td style="padding:12px;border-top:1px solid var(--border)">Every trade</td>
+            </tr>
+            <tr>
+              <td style="padding:12px;border-top:1px solid var(--border)">Dashboard</td>
+              <td style="padding:12px;border-top:1px solid var(--border)">Quick overview of performance</td>
+              <td style="padding:12px;border-top:1px solid var(--border)">Daily</td>
+            </tr>
+            <tr>
+              <td style="padding:12px;border-top:1px solid var(--border)">Analytics</td>
+              <td style="padding:12px;border-top:1px solid var(--border)">Deep performance analysis</td>
+              <td style="padding:12px;border-top:1px solid var(--border)">Weekly</td>
+            </tr>
+            <tr>
+              <td style="padding:12px;border-top:1px solid var(--border)">Journal</td>
+              <td style="padding:12px;border-top:1px solid var(--border)">Reflect and learn from trades</td>
+              <td style="padding:12px;border-top:1px solid var(--border)">After each trade</td>
+            </tr>
+            <tr>
+              <td style="padding:12px;border-top:1px solid var(--border)">Notes</td>
+              <td style="padding:12px;border-top:1px solid var(--border)">Document strategies and lessons</td>
+              <td style="padding:12px;border-top:1px solid var(--border)">As needed</td>
+            </tr>
+            <tr>
+              <td style="padding:12px;border-top:1px solid var(--border)">Rules</td>
+              <td style="padding:12px;border-top:1px solid var(--border)">Set and monitor trading discipline</td>
+              <td style="padding:12px;border-top:1px solid var(--border)">Review monthly</td>
+            </tr>
+            <tr>
+              <td style="padding:12px;border-top:1px solid var(--border)">Backup</td>
+              <td style="padding:12px;border-top:1px solid var(--border)">Download JSON backup</td>
+              <td style="padding:12px;border-top:1px solid var(--border)">Weekly</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Final Encouragement -->
+    <div class="tool-info-card" style="background:linear-gradient(135deg, var(--green-d), rgba(16,185,129,0.05));border-color:var(--green)">
+      <div class="tool-info-icon">🎯</div>
+      <div class="tool-info-content">
+        <h2 class="tool-info-title" style="color:var(--green2)">You're Now Ready to Transform Your Trading!</h2>
+        <p class="tool-info-desc" style="color:var(--t1)">Remember: The goal isn't perfection, it's progress. Every trade logged, every lesson documented, every review completed brings you one step closer to consistent profitability.</p>
+        <div class="tool-info-why" style="background:rgba(16,185,129,0.1);border-color:var(--green);color:var(--green2)">
+          <strong>Your Journey Starts Now:</strong> Open your journal, log your next trade, and commit to the process. Success in trading isn't about being right—it's about being disciplined, adaptable, and continuously improving. FX Journal is here to support you every step of the way.
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

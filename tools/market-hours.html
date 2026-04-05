@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="amoled">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Forex Market Hours — FX Journal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="tools.css">
+</head>
+<body>
+
+<div id="toasts"></div>
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div class="logo-a">
+    <div class="logo-m">F</div>
+    <div>
+      <div class="logo-n">FX Journal</div>
+      <div class="logo-s">Trading Journal</div>
+    </div>
+  </div>
+  <a href="../index.html" class="nav-item"><span class="nav-ic">◈</span>Dashboard</a>
+  <div class="nav-sec">
+    <div class="nav-lbl">Tools</div>
+    <div class="nav-item" data-p="position" onclick="window.location.href='position-calculator.html'"><span class="nav-ic">📐</span>Position Calculator</div>
+    <div class="nav-item" data-p="gainloss" onclick="window.location.href='gain-loss.html'"><span class="nav-ic">📊</span>Gain/Loss Calculator</div>
+    <div class="nav-item active" data-p="market-hours"><span class="nav-ic">🌍</span>Market Hours</div>
+  </div>
+  <div class="nav-sec">
+    <div class="nav-lbl">Resources</div>
+    <div class="nav-item" data-p="notes-guide" onclick="window.location.href='../notes/guide.html'"><span class="nav-ic">📖</span>How to Use</div>
+  </div>
+  <div class="sb-foot">
+    <div class="user-row">
+      <div class="user-av">T</div>
+      <div>
+        <div class="user-nm">Trader</div>
+        <div class="user-rl">Tools Section</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div id="main">
+  <header class="topbar">
+    <div class="topbar-tl">Forex Market Hours</div>
+    <div class="topbar-r">
+      <a href="../index.html" class="btn btn-s btn-sm">← Back to Journal</a>
+    </div>
+  </header>
+
+  <div class="page active" style="padding:24px 32px;overflow-y:auto">
+    
+    <!-- Tool Info Card -->
+    <div class="tool-info-card">
+      <div class="tool-info-icon">🌍</div>
+      <div class="tool-info-content">
+        <h2 class="tool-info-title">Forex Market Hours Tracker</h2>
+        <p class="tool-info-desc">Real-time tracking of major forex trading sessions (Sydney, Tokyo, London, New York) with automatic daylight saving time adjustments. See which sessions are currently open and plan your trades accordingly.</p>
+        <div class="tool-info-why">
+          <strong>Why use this?</strong> Different currency pairs are most active during specific sessions. Knowing when markets are open helps you trade during high liquidity periods and avoid low-volume times that can lead to slippage.
+        </div>
+      </div>
+    </div>
+
+    <!-- Timezone Selector -->
+    <div class="timezone-selector">
+      <label for="tz-select">🕐 Select Your Timezone</label>
+      <select class="fs" id="tz-select" onchange="changeTimezone()" style="max-width:350px">
+        <option value="UTC">UTC (Coordinated Universal Time)</option>
+        <option value="America/New_York">Eastern Time (US/Canada)</option>
+        <option value="America/Chicago">Central Time (US/Canada)</option>
+        <option value="America/Denver">Mountain Time (US/Canada)</option>
+        <option value="America/Los_Angeles">Pacific Time (US/Canada)</option>
+        <option value="Europe/London">London (GMT/BST)</option>
+        <option value="Europe/Paris">Paris (CET/CEST)</option>
+        <option value="Europe/Frankfurt">Frankfurt (CET/CEST)</option>
+        <option value="Asia/Tokyo">Tokyo (JST)</option>
+        <option value="Asia/Shanghai">Shanghai (CST)</option>
+        <option value="Asia/Singapore">Singapore (SGT)</option>
+        <option value="Asia/Dubai">Dubai (GST)</option>
+        <option value="Australia/Sydney">Sydney (AEST/AEDT)</option>
+        <option value="Australia/Melbourne">Melbourne (AEST/AEDT)</option>
+        <option value="Asia/Kolkata">India (IST)</option>
+      </select>
+      
+      <div class="dst-notice">
+        <div class="dst-notice-icon">⏰</div>
+        <div class="dst-notice-content">
+          <div class="dst-notice-title">Automatic Daylight Saving Time Adjustment</div>
+          <div class="dst-notice-text">All session times automatically adjust for DST changes in each region. London switches to BST, Sydney to AEDT, and New York to EDT when applicable.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Current Time Display -->
+    <div class="card" style="margin-bottom:24px;text-align:center;padding:20px">
+      <div style="font-size:13px;color:var(--t3);margin-bottom:8px">Current UTC Time</div>
+      <div style="font-size:42px;font-weight:700;color:var(--accent2);font-family:'Geist Mono',monospace" id="utc-clock">--:--:--</div>
+      <div style="font-size:12px;color:var(--t3);margin-top:8px" id="current-date">Loading...</div>
+    </div>
+
+    <!-- Market Overview -->
+    <div style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap">
+      <div class="badge bg" style="padding:8px 16px;font-size:13px" id="markets-open-badge">● Markets Open</div>
+      <div class="badge bx" style="padding:8px 16px;font-size:13px" id="next-session-badge">Next: --</div>
+      <div class="badge bx" style="padding:8px 16px;font-size:13px" id="sessions-active-count">0/4 Sessions Active</div>
+    </div>
+
+    <!-- Session Cards Grid -->
+    <div class="market-hours-grid">
+      <!-- Sydney Session -->
+      <div class="session-card" id="session-sydney" style="--session-color: #10B981">
+        <div class="session-header">
+          <div class="session-icon">🇦🇺</div>
+          <div style="flex:1">
+            <div class="session-name">Sydney</div>
+            <div class="session-status closed" id="sydney-status">Closed</div>
+          </div>
+        </div>
+        <div class="session-time" id="sydney-time">--:--</div>
+        <div class="session-subtime" id="sydney-subtime">Opens at --:--</div>
+        <div class="session-details">
+          <div class="session-detail-row">
+            <span class="session-detail-label">Local Time:</span>
+            <span class="session-detail-value" id="sydney-local">--:--</span>
+          </div>
+          <div class="session-detail-row">
+            <span class="session-detail-label">UTC Offset:</span>
+            <span class="session-detail-value" id="sydney-offset">UTC+10</span>
+          </div>
+          <div class="session-detail-row">
+            <span class="session-detail-label">DST Active:</span>
+            <span class="session-detail-value" id="sydney-dst">No</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tokyo Session -->
+      <div class="session-card" id="session-tokyo" style="--session-color: #EF4444">
+        <div class="session-header">
+          <div class="session-icon">🇯🇵</div>
+          <div style="flex:1">
+            <div class="session-name">Tokyo</div>
+            <div class="session-status closed" id="tokyo-status">Closed</div>
+          </div>
+        </div>
+        <div class="session-time" id="tokyo-time">--:--</div>
+        <div class="session-subtime" id="tokyo-subtime">Opens at --:--</div>
+        <div class="session-details">
+          <div class="session-detail-row">
+            <span class="session-detail-label">Local Time:</span>
+            <span class="session-detail-value" id="tokyo-local">--:--</span>
+          </div>
+          <div class="session-detail-row">
+            <span class="session-detail-label">UTC Offset:</span>
+            <span class="session-detail-value" id="tokyo-offset">UTC+9</span>
+          </div>
+          <div class="session-detail-row">
+            <span class="session-detail-label">DST Active:</span>
+            <span class="session-detail-value" id="tokyo-dst">No (JST)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- London Session -->
+      <div class="session-card" id="session-london" style="--session-color: #3B82F6">
+        <div class="session-header">
+          <div class="session-icon">🇬🇧</div>
+          <div style="flex:1">
+            <div class="session-name">London</div>
+            <div class="session-status closed" id="london-status">Closed</div>
+          </div>
+        </div>
+        <div class="session-time" id="london-time">--:--</div>
+        <div class="session-subtime" id="london-subtime">Opens at --:--</div>
+        <div class="session-details">
+          <div class="session-detail-row">
+            <span class="session-detail-label">Local Time:</span>
+            <span class="session-detail-value" id="london-local">--:--</span>
+          </div>
+          <div class="session-detail-row">
+            <span class="session-detail-label">UTC Offset:</span>
+            <span class="session-detail-value" id="london-offset">UTC+0</span>
+          </div>
+          <div class="session-detail-row">
+            <span class="session-detail-label">DST Active:</span>
+            <span class="session-detail-value" id="london-dst">No (GMT)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- New York Session -->
+      <div class="session-card" id="session-newyork" style="--session-color: #8B5CF6">
+        <div class="session-header">
+          <div class="session-icon">🇺🇸</div>
+          <div style="flex:1">
+            <div class="session-name">New York</div>
+            <div class="session-status closed" id="newyork-status">Closed</div>
+          </div>
+        </div>
+        <div class="session-time" id="newyork-time">--:--</div>
+        <div class="session-subtime" id="newyork-subtime">Opens at --:--</div>
+        <div class="session-details">
+          <div class="session-detail-row">
+            <span class="session-detail-label">Local Time:</span>
+            <span class="session-detail-value" id="newyork-local">--:--</span>
+          </div>
+          <div class="session-detail-row">
+            <span class="session-detail-label">UTC Offset:</span>
+            <span class="session-detail-value" id="newyork-offset">UTC-5</span>
+          </div>
+          <div class="session-detail-row">
+            <span class="session-detail-label">DST Active:</span>
+            <span class="session-detail-value" id="newyork-dst">No (EST)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Session Overlap Info -->
+    <div class="card" style="margin-top:24px">
+      <div class="card-h">
+        <span class="card-t">⏱️ Session Overlaps (High Liquidity Periods)</span>
+      </div>
+      <div class="card-b">
+        <div class="ref-item">
+          <div class="ref-icon">🔥</div>
+          <div class="ref-content">
+            <div class="ref-title">London / New York Overlap</div>
+            <div class="ref-desc">1:00 PM - 5:00 PM UTC • Most liquid period • Best for EUR/USD, GBP/USD, USD/JPY</div>
+          </div>
+        </div>
+        <div class="ref-item">
+          <div class="ref-icon">💹</div>
+          <div class="ref-content">
+            <div class="ref-title">Tokyo / London Overlap</div>
+            <div class="ref-desc">8:00 AM - 9:00 AM UTC • Good for EUR/JPY, GBP/JPY crosses</div>
+          </div>
+        </div>
+        <div class="ref-item">
+          <div class="ref-icon">📊</div>
+          <div class="ref-content">
+            <div class="ref-title">Sydney / Tokyo Overlap</div>
+            <div class="ref-desc">12:00 AM - 3:00 AM UTC • Asian session • Best for AUD/USD, NZD/USD, USD/JPY</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Trading Tips -->
+    <div class="card" style="margin-top:14px">
+      <div class="card-h">
+        <span class="card-t">💡 Trading Session Tips</span>
+      </div>
+      <div class="card-b">
+        <div class="pip-explanation">
+          <p><strong>Sydney Session (Asian Pacific):</strong></p>
+          <div class="code-block">Lower volatility, good for range trading</div>
+          <p style="margin-top:8px"><strong>Tokyo Session (Asian):</strong></p>
+          <div class="code-block">Watch JPY pairs, Chinese market influence</div>
+          <p style="margin-top:8px"><strong>London Session (European):</strong></p>
+          <div class="code-block">Highest volume, trend-setting moves</div>
+          <p style="margin-top:8px"><strong>New York Session (North American):</strong></p>
+          <div class="code-block">USD news impact, overlap with London = best trading</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="market-hours.js"></script>
+</body>
+</html>
