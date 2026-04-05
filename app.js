@@ -39,6 +39,7 @@ let st={
   charts:{},
   depwList:[],
   sortField:'date',sortDir:'desc',
+  guideShown:false,
 };
 
 let _unsaved=false,_saveTimer=null;
@@ -2684,6 +2685,12 @@ function init(){
     populateFilters();
     renderDash();
     checkRules();
+    
+    // Show guide popup on first time (no trades)
+    if(DB.trades.length===0&&!st.guideShown){
+      openGuideModal();
+      st.guideShown=true;
+    }
   }catch(err){
     console.error('init error:',err);
     // Retry once after a tick in case DOM wasn't fully ready
@@ -2953,8 +2960,8 @@ function getMarketHoursHTML(){
       <div class="tool-detail-icon">🌍</div>
       <div class="tool-detail-info">
         <div class="tool-detail-title">Market Hours Tracker</div>
-        <div class="tool-detail-desc">Real-time tracking of major forex trading sessions with automatic daylight saving time adjustments. Know exactly when each session opens and closes in your timezone.</div>
-        <div class="tool-detail-why"><strong>Why use this?</strong> Trading during active sessions ensures better liquidity and volatility. Overlapping sessions (London-NY) offer the best trading conditions.</div>
+        <div class="tool-detail-desc">Real-time tracking of major forex trading sessions with automatic daylight saving time adjustments. Visualize session overlaps and find optimal trading windows.</div>
+        <div class="tool-detail-why"><strong>Why use this?</strong> Trading during active sessions ensures better liquidity and volatility. Overlapping sessions (London-NY) offer the best trading conditions with highest volume.</div>
       </div>
     </div>
     
@@ -2972,7 +2979,33 @@ function getMarketHoursHTML(){
       </select>
     </div>
     
+    <!-- Interactive Session Timeline -->
+    <div class="session-timeline-container">
+      <div class="timeline-header">
+        <span class="timeline-label">24-Hour Market Cycle</span>
+        <span class="timeline-current" id="timeline-current-time">--:--</span>
+      </div>
+      <div class="timeline-wrapper">
+        <div class="timeline-track" id="session-timeline">
+          <!-- Dynamic session bars will be rendered here -->
+        </div>
+        <div class="timeline-hours" id="timeline-hours">
+          <!-- Hour markers -->
+        </div>
+      </div>
+      <div class="timeline-legend" id="timeline-legend">
+        <!-- Legend items -->
+      </div>
+    </div>
+    
+    <!-- Session Cards Grid -->
     <div id="mh-grid" class="market-grid"></div>
+    
+    <!-- Overlap Indicator -->
+    <div class="overlap-indicator" id="overlap-indicator">
+      <div class="overlap-title">🔥 Active Overlaps</div>
+      <div class="overlap-content" id="overlap-content"></div>
+    </div>
     
     <div class="dst-notice">
       <div class="dst-icon">⏰</div>
@@ -3044,15 +3077,50 @@ function isSessionOpen(session){
 function renderMarketHours(){
   const tz=document.getElementById('mh-tz')?.value||'UTC';
   const grid=document.getElementById('mh-grid');
+  const timeline=document.getElementById('session-timeline');
+  const hours=document.getElementById('timeline-hours');
+  const legend=document.getElementById('timeline-legend');
+  const currentTime=document.getElementById('timeline-current-time');
+  const overlapContent=document.getElementById('overlap-content');
+  
   if(!grid)return;
   
+  // Update current time
+  if(currentTime){
+    const now=new Date();
+    currentTime.textContent=now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',timeZone:tz});
+  }
+  
   const sessions=[
-    {id:'sydney',name:'Sydney',icon:'🇦🇺'},
-    {id:'tokyo',name:'Tokyo',icon:'🇯🇵'},
-    {id:'london',name:'London',icon:'🇬🇧'},
-    {id:'newyork',name:'New York',icon:'🇺🇸'}
+    {id:'sydney',name:'Sydney',icon:'🇦🇺',color:'#10b981',start:21,end:6},
+    {id:'tokyo',name:'Tokyo',icon:'🇯🇵',color:'#f59e0b',start:0,end:9},
+    {id:'london',name:'London',icon:'🇬🇧',color:'#3b82f6',start:7,end:16},
+    {id:'newyork',name:'New York',icon:'🇺🇸',color:'#ef4444',start:12,end:21}
   ];
   
+  // Render timeline
+  if(timeline&&hours&&legend){
+    // Hour markers
+    hours.innerHTML=Array.from({length:25},(_,i)=>`<div class="timeline-hour-mark">${i%6===0?i:''}</div>`).join('');
+    
+    // Session bars on timeline
+    timeline.innerHTML=sessions.map(sess=>{
+      let startLeft=sess.start/24*100;
+      let width=((sess.end<=sess.start?24+sess.end:sess.end)-sess.start)/24*100;
+      return `<div class="timeline-session-bar" style="left:${startLeft}%;width:${width}%;background:${sess.color}" title="${sess.name}: ${sess.start}:00-${sess.end}:00 UTC"></div>`;
+    }).join('');
+    
+    // Current time indicator
+    const now=new Date();
+    const utcHour=now.getUTCHours()+now.getUTCMinutes()/60;
+    const currentLeft=utcHour/24*100;
+    timeline.innerHTML+=`<div class="timeline-current-indicator" style="left:${currentLeft}%"></div>`;
+    
+    // Legend
+    legend.innerHTML=sessions.map(sess=>`<div class="timeline-legend-item"><span class="legend-color" style="background:${sess.color}"></span><span>${sess.name}</span></div>`).join('');
+  }
+  
+  // Render session cards
   grid.innerHTML=sessions.map(sess=>{
     const times=getSessionTimes(sess.id,tz);
     const open=isSessionOpen(sess.id);
@@ -3075,6 +3143,41 @@ function renderMarketHours(){
       </div>
     `;
   }).join('');
+  
+  // Calculate and display overlaps
+  if(overlapContent){
+    const overlaps=findOverlaps(sessions);
+    if(overlaps.length>0){
+      overlapContent.innerHTML=overlaps.map(o=>`<div class="overlap-item"><span class="overlap-sessions">${o.sessions}</span><span class="overlap-time">${o.time}</span><span class="overlap-benefit">High liquidity period</span></div>`).join('');
+    }else{
+      overlapContent.innerHTML='<div class="overlap-none">No active overlaps at this time</div>';
+    }
+  }
+}
+
+function findOverlaps(sessions){
+  const now=new Date();
+  const utcHour=now.getUTCHours()+now.getUTCMinutes()/60;
+  const overlaps=[];
+  
+  // Check for each pair of sessions
+  for(let i=0;i<sessions.length;i++){
+    for(let j=i+1;j<sessions.length;j++){
+      const s1=sessions[i],s2=sessions[j];
+      const s1Start=s1.start,s1End=s1.end<=s1.start?24+s1.end:s1.end;
+      const s2Start=s2.start,s2End=s2.end<=s2.start?24+s2.end:s2.end;
+      
+      // Check if current time is in both sessions
+      const inS1=(utcHour>=s1Start||utcHour<s1End)&&(s1End>s1Start?utcHour>=s1Start&&utcHour<s1End:utcHour>=s1Start||utcHour<s1End);
+      const inS2=(utcHour>=s2Start||utcHour<s2End)&&(s2End>s2Start?utcHour>=s2Start&&utcHour<s2End:utcHour>=s2Start||utcHour<s2End);
+      
+      if(inS1&&inS2){
+        overlaps.push({sessions:`${s1.name} + ${s2.name}`,time:'Active now'});
+      }
+    }
+  }
+  
+  return overlaps;
 }
 
 function initMarketHours(){
@@ -3084,8 +3187,24 @@ function initMarketHours(){
     tzSelect.value=DB.settings.tz||'UTC';
   }
   renderMarketHours();
-  // Update every minute
+  // Update every minute for session status, every second for current time indicator
   setInterval(renderMarketHours,60000);
+  // Update current time indicator more frequently
+  setInterval(()=>{
+    const currentTime=document.getElementById('timeline-current-time');
+    const indicator=document.querySelector('.timeline-current-indicator');
+    if(currentTime){
+      const tz=document.getElementById('mh-tz')?.value||'UTC';
+      const now=new Date();
+      currentTime.textContent=now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',timeZone:tz});
+    }
+    if(indicator){
+      const now=new Date();
+      const utcHour=now.getUTCHours()+now.getUTCMinutes()/60;
+      const currentLeft=utcHour/24*100;
+      indicator.style.left=currentLeft+'%';
+    }
+  },1000);
 }
 
 function openGuideModal(){
