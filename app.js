@@ -23,24 +23,24 @@ let DB={
 };
 
 // ═══════════════════════════════════════════════════════════
-// REAL MARKET SESSIONS (FIXED - Independent of user settings)
-// These are the ACTUAL market hours in their local timezones
-// DO NOT modify these - they represent real global market hours
+// REAL MARKET SESSIONS (FIXED - Based on actual market hours in UTC)
+// These are the ACTUAL market hours converted from local time to UTC
+// Source: Real forex market session times
 // ═══════════════════════════════════════════════════════════
 const REAL_MARKET_SESSIONS = [
-  {id:'m1',name:'Sydney',start:'09:00',end:'17:00',color:'#a78bfa',localTz:'Australia/Sydney'},
-  {id:'m2',name:'Tokyo',start:'09:00',end:'17:00',color:'#f59e0b',localTz:'Asia/Tokyo'},
-  {id:'m3',name:'London',start:'08:00',end:'17:00',color:'#3b82f6',localTz:'Europe/London'},
-  {id:'m4',name:'New York',start:'09:30',end:'16:00',color:'#22c55e',localTz:'America/New_York'},
+  {id:'m1',name:'Sydney',start:'22:00',end:'07:00',color:'#a78bfa',localTz:'UTC',note:'Sydney: 22:00-07:00 UTC (Oct-Apr), 21:00-06:00 UTC (Apr-Oct DST)'},
+  {id:'m2',name:'Tokyo',start:'00:00',end:'09:00',color:'#f59e0b',localTz:'UTC',note:'Tokyo: 00:00-09:00 UTC (No DST in Japan)'},
+  {id:'m3',name:'London',start:'08:00',end:'17:00',color:'#3b82f6',localTz:'UTC',note:'London: 08:00-17:00 UTC (Mar-Oct), 07:00-16:00 UTC (Oct-Mar DST)'},
+  {id:'m4',name:'New York',start:'13:00',end:'22:00',color:'#22c55e',localTz:'UTC',note:'New York: 13:00-22:00 UTC (Nov-Mar), 12:00-21:00 UTC (Mar-Nov DST)'},
 ];
 
-// Initialize default sessions if empty (for Rules section)
+// Initialize default sessions if empty (for Rules section) - using UTC times
 if(DB.sessions.length===0){
   DB.sessions=[
-    {id:'s1',name:'London',start:'08:00',end:'17:00',color:'#3b82f6',localTz:'Europe/London'},
-    {id:'s2',name:'New York',start:'09:30',end:'16:00',color:'#22c55e',localTz:'America/New_York'},
-    {id:'s3',name:'Tokyo',start:'09:00',end:'17:00',color:'#f59e0b',localTz:'Asia/Tokyo'},
-    {id:'s4',name:'Sydney',start:'09:00',end:'17:00',color:'#a78bfa',localTz:'Australia/Sydney'},
+    {id:'s1',name:'London',start:'08:00',end:'17:00',color:'#3b82f6',localTz:'UTC'},
+    {id:'s2',name:'New York',start:'13:00',end:'22:00',color:'#22c55e',localTz:'UTC'},
+    {id:'s3',name:'Tokyo',start:'00:00',end:'09:00',color:'#f59e0b',localTz:'UTC'},
+    {id:'s4',name:'Sydney',start:'22:00',end:'07:00',color:'#a78bfa',localTz:'UTC'},
   ];
 }
 
@@ -167,7 +167,22 @@ function updateClock(){
 }
 function getGMTHHMM(){const n=new Date();return n.getUTCHours()*100+n.getUTCMinutes()}
 function timeToNum(hm){const[h,m]=hm.split(':').map(Number);return h*100+m}
-function inSession(s){const n=getGMTHHMM(),st2=timeToNum(s.start),en=timeToNum(s.end);return st2<en?n>=st2&&n<en:n>=st2||n<en}
+function inSession(s){
+  const userTz=DB.settings.tz||'Asia/Kolkata';
+  try{
+    const { startMinutes, endMinutes } = getSessionTimesInUserTZ(s, userTz);
+    const now = new Date();
+    const currentTimeStr = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: false, timeZone: userTz });
+    const [curH, curM] = currentTimeStr.split(':').map(Number);
+    const currentTime = curH * 60 + curM;
+    
+    if(startMinutes < endMinutes){
+      return currentTime >= startMinutes && currentTime < endMinutes;
+    }else{
+      return currentTime >= startMinutes || currentTime < endMinutes;
+    }
+  }catch{return false}
+}
 function getActiveSessions(){return DB.sessions.filter(s=>inSession(s))}
 function updateSessionBadge(){
   const act=getActiveSessions();
@@ -2660,69 +2675,94 @@ function getUserTimeMinutes(){
   return h*60+m;
 }
 
+// Convert a time (HH:MM) from source timezone to target timezone, returning minutes since midnight in target TZ
+function convertTimeToTargetTZ(timeStr, sourceTz, targetTz){
+  const [h, m] = timeStr.split(':').map(Number);
+  const now = new Date();
+  
+  // Create a date representing the time in source timezone today
+  const sourceDateStr = now.toLocaleString('en-US', { timeZone: sourceTz });
+  const sourceDate = new Date(sourceDateStr);
+  sourceDate.setHours(h, m, 0, 0);
+  
+  // Convert that moment to target timezone and get the hour/minute
+  const targetDateStr = sourceDate.toLocaleString('en-US', { timeZone: targetTz });
+  const targetDate = new Date(targetDateStr);
+  
+  return targetDate.getHours() * 60 + targetDate.getMinutes();
+}
+
+// Get session start/end times in user's timezone as formatted strings and minutes
+// Sessions are stored in UTC, so we convert from UTC to user's timezone
+function getSessionTimesInUserTZ(s, userTz){
+  const sessionLocalTz = s.localTz || 'UTC';
+  const [sh, sm] = s.start.split(':').map(Number);
+  const [eh, em] = s.end.split(':').map(Number);
+  const now = new Date();
+  
+  // Since sessions are stored in UTC, create UTC times for start and end
+  const sessionStartUTC = new Date(Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate(),
+    sh, sm, 0, 0
+  ));
+  
+  const sessionEndUTC = new Date(Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate(),
+    eh, em, 0, 0
+  ));
+  
+  // Handle overnight sessions (end time is next day in UTC)
+  if (sessionEndUTC <= sessionStartUTC) {
+    sessionEndUTC.setUTCDate(sessionEndUTC.getUTCDate() + 1);
+  }
+  
+  // Convert UTC times to user's timezone for display
+  const startOpts = { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: userTz };
+  const endOpts = { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: userTz };
+  
+  const startDisplay = sessionStartUTC.toLocaleTimeString('en-GB', startOpts);
+  const endDisplay = sessionEndUTC.toLocaleTimeString('en-GB', endOpts);
+  
+  // Get minutes since midnight in user's timezone
+  const startInUser = new Date(sessionStartUTC.toLocaleString('en-US', { timeZone: userTz }));
+  const endInUser = new Date(sessionEndUTC.toLocaleString('en-US', { timeZone: userTz }));
+  
+  const startMinutes = startInUser.getHours() * 60 + startInUser.getMinutes();
+  const endMinutes = endInUser.getHours() * 60 + endInUser.getMinutes();
+  
+  return { startDisplay, endDisplay, startMinutes, endMinutes };
+}
+
 // Check if a session (stored with local timezone) is active in user's timezone
 function inSessionUserTZ(s){
-  const userTz=DB.settings.tz||'Asia/Kolkata';
-  const sessionLocalTz=s.localTz||'UTC';
+  const userTz = DB.settings.tz || 'Asia/Kolkata';
   try{
-    const [sh,sm]=s.start.split(':').map(Number);
-    const [eh,em]=s.end.split(':').map(Number);
-    const now=new Date();
+    const { startMinutes, endMinutes } = getSessionTimesInUserTZ(s, userTz);
+    const currentTime = getUserTimeMinutes();
     
-    // Create date objects for session start/end in the session's local timezone
-    const sessionStart=new Date(now.toLocaleString('en-US',{timeZone:sessionLocalTz}));
-    sessionStart.setHours(sh,sm,0,0);
-    
-    const sessionEnd=new Date(now.toLocaleString('en-US',{timeZone:sessionLocalTz}));
-    sessionEnd.setHours(eh,em,0,0);
-    
-    // Convert session times to user's timezone
-    const startInUserTz=new Date(sessionStart.toLocaleString('en-US',{timeZone:userTz}));
-    const endInUserTz=new Date(sessionEnd.toLocaleString('en-US',{timeZone:userTz}));
-    
-    const startH=startInUserTz.getHours();
-    const startM=startInUserTz.getMinutes();
-    const endH=endInUserTz.getHours();
-    const endM=endInUserTz.getMinutes();
-    
-    const startTime=startH*60+startM;
-    const endTime=endH*60+endM;
-    const currentTime=getUserTimeMinutes();
-    
-    if(startTime<endTime){
-      return currentTime>=startTime&&currentTime<endTime;
-    }else{
-      return currentTime>=startTime||currentTime<endTime;
+    if(startMinutes < endMinutes){
+      return currentTime >= startMinutes && currentTime < endMinutes;
+    } else {
+      // Overnight session
+      return currentTime >= startMinutes || currentTime < endMinutes;
     }
-  }catch{return false}
+  } catch { return false }
 }
 
 function getActiveSessionsInUserTZ(){
   const tz=DB.settings.tz||'Asia/Kolkata';
   const tzLabelStr=tzLabel();
-  const now=new Date();
   
   // Use REAL_MARKET_SESSIONS for Market Hours (independent of user's rule sessions)
   return REAL_MARKET_SESSIONS.filter(s=>{
     try{
-      const [sh,sm]=s.start.split(':').map(Number);
-      const [eh,em]=s.end.split(':').map(Number);
-      const sessionLocalTz=s.localTz||'UTC';
-      
-      // Create date objects for session start/end in the session's local timezone
-      const sessionStart=new Date(now.toLocaleString('en-US',{timeZone:sessionLocalTz}));
-      sessionStart.setHours(sh,sm,0,0);
-      
-      const sessionEnd=new Date(now.toLocaleString('en-US',{timeZone:sessionLocalTz}));
-      sessionEnd.setHours(eh,em,0,0);
-      
-      // Convert to user timezone for display
-      const startOpts={hour:'2-digit',minute:'2-digit',hour12:false,timeZone:tz};
-      const endOpts={hour:'2-digit',minute:'2-digit',hour12:false,timeZone:tz};
-      
-      s._userStart=sessionStart.toLocaleTimeString('en-GB',startOpts);
-      s._userEnd=sessionEnd.toLocaleTimeString('en-GB',endOpts);
-      
+      const { startDisplay, endDisplay } = getSessionTimesInUserTZ(s, tz);
+      s._userStart = startDisplay;
+      s._userEnd = endDisplay;
       return inSessionUserTZ(s);
     }catch{return false}
   }).map(s=>({...s,start:s._userStart,end:s._userEnd}));
@@ -2816,57 +2856,36 @@ function renderMHSessions(){
   
   const tz=DB.settings.tz||'Asia/Kolkata';
   const tzLabelStr=tzLabel();
-  const now=new Date();
   const currentTime=getUserTimeMinutes();
   
   // Use REAL_MARKET_SESSIONS for Market Hours (independent of user's rule sessions)
   const sessions=REAL_MARKET_SESSIONS.map(s=>{
     try{
-      const [sh,sm]=s.start.split(':').map(Number);
-      const [eh,em]=s.end.split(':').map(Number);
-      const sessionLocalTz=s.localTz||'UTC';
-      
-      // Create date objects for session start/end in the session's local timezone
-      const sessionStart=new Date(now.toLocaleString('en-US',{timeZone:sessionLocalTz}));
-      sessionStart.setHours(sh,sm,0,0);
-      
-      const sessionEnd=new Date(now.toLocaleString('en-US',{timeZone:sessionLocalTz}));
-      sessionEnd.setHours(eh,em,0,0);
-      
-      // Convert to user timezone for display
-      const startOpts={hour:'numeric',minute:'numeric',hour12:false,timeZone:tz};
-      const endOpts={hour:'numeric',minute:'numeric',hour12:false,timeZone:tz};
-      const startTimeStr=sessionStart.toLocaleTimeString('en-US',startOpts);
-      
-      const [startH,startM]=startTimeStr.split(':').map(Number);
-      const [endH,endM]=endTimeStr.split(':').map(Number);
-      
-      const startTime=startH*60+startM;
-      const endTime=endH*60+endM;
+      const { startDisplay, endDisplay, startMinutes, endMinutes } = getSessionTimesInUserTZ(s, tz);
       
       let isActive=false;
-      if(startTime<endTime){
-        isActive=currentTime>=startTime&&currentTime<endTime;
+      if(startMinutes < endMinutes){
+        isActive=currentTime>=startMinutes&&currentTime<endMinutes;
       }else{
-        isActive=currentTime>=startTime||currentTime<endTime;
+        isActive=currentTime>=startMinutes||currentTime<endMinutes;
       }
       
       // Calculate progress
       let progress=0;
-      const totalDuration=endTime>startTime?endTime-startTime:(24*60-startTime+endTime);
+      const totalDuration=endMinutes>startMinutes?endMinutes-startMinutes:(24*60-startMinutes+endMinutes);
       let elapsed=0;
-      if(startTime<endTime){
-        elapsed=Math.max(0,Math.min(totalDuration,currentTime-startTime));
+      if(startMinutes<endMinutes){
+        elapsed=Math.max(0,Math.min(totalDuration,currentTime-startMinutes));
       }else{
-        if(currentTime>=startTime){
-          elapsed=currentTime-startTime;
+        if(currentTime>=startMinutes){
+          elapsed=currentTime-startMinutes;
         }else{
-          elapsed=(24*60-startTime)+currentTime;
+          elapsed=(24*60-startMinutes)+currentTime;
         }
       }
       progress=totalDuration>0?(elapsed/totalDuration)*100:0;
       
-      return {session:s,isActive,progress,startDisplay:startTimeStr,endDisplay:endTimeStr};
+      return {session:s,isActive,progress,startDisplay,endDisplay};
     }catch{
       return {session:s,isActive:false,progress:0,startDisplay:s.start,endDisplay:s.end};
     }
@@ -2917,13 +2936,39 @@ function renderMHActiveSessions(){
   }
   
   container.innerHTML=active.map(s=>{
-    const [eh,em]=s.end.split(':').map(Number);
-    const endTime=eh*60+em;
+    const tz=DB.settings.tz||'Asia/Kolkata';
+    const tzLabelStr=tzLabel();
     const currentTime=getUserTimeMinutes();
-    let remaining=endTime-currentTime;
-    if(remaining<0)remaining+=24*60;
-    const remHours=Math.floor(remaining/60);
-    const remMins=remaining%60;
+    
+    // Parse the start and end times (already in user's TZ from getActiveSessionsInUserTZ)
+    const [startH, startM] = s.start.split(':').map(Number);
+    const [endH, endM] = s.end.split(':').map(Number);
+    const startTimeInUserTz = startH * 60 + startM;
+    const endTimeInUserTz = endH * 60 + endM;
+    
+    let remaining = 0;
+    
+    // Calculate remaining time based on whether session spans midnight
+    if (startTimeInUserTz < endTimeInUserTz) {
+      // Normal session (doesn't span midnight)
+      remaining = endTimeInUserTz - currentTime;
+      if (remaining < 0) remaining = 0;
+    } else {
+      // Overnight session (spans midnight)
+      if (currentTime >= startTimeInUserTz) {
+        // After start time on day 1
+        remaining = (24 * 60 - currentTime) + endTimeInUserTz;
+      } else if (currentTime < endTimeInUserTz) {
+        // Before end time on day 2
+        remaining = endTimeInUserTz - currentTime;
+      } else {
+        // Between end and start (session not active)
+        remaining = 0;
+      }
+    }
+    
+    const remHours = Math.floor(remaining / 60);
+    const remMins = remaining % 60;
     
     return `
       <div class="mh-active-item">
@@ -2932,7 +2977,7 @@ function renderMHActiveSessions(){
           <div class="mh-active-name">${s.name} Session</div>
           <div class="mh-active-time">Closes at ${s.end} ${tzLabelStr}</div>
         </div>
-        <div class="mh-active-countdown">-${remHours.toString().padStart(2,'0')}:${remMins.toString().padStart(2,'0')}</div>
+        <div class="mh-active-countdown">${remHours.toString().padStart(2,'0')}:${remMins.toString().padStart(2,'0')}</div>
       </div>
     `;
   }).join('');
@@ -2966,7 +3011,6 @@ function renderMHOverlaps(){
   
   const tz=DB.settings.tz||'Asia/Kolkata';
   const tzLabelStr=tzLabel();
-  const now=new Date();
   const currentTime=getUserTimeMinutes();
   
   container.innerHTML=`
@@ -2978,28 +3022,8 @@ function renderMHOverlaps(){
           if(!s)return null;
           
           try{
-            const [sh,sm]=s.start.split(':').map(Number);
-            const [eh,em]=s.end.split(':').map(Number);
-            
-            // Use session local timezone for accurate conversion
-            const sessionLocalTz=s.localTz||'UTC';
-
-            // Create date objects for session start/end in the session's local timezone
-            const sessionStart=new Date(now.toLocaleString('en-US',{timeZone:sessionLocalTz}));
-            sessionStart.setHours(sh,sm,0,0);
-
-            const sessionEnd=new Date(now.toLocaleString('en-US',{timeZone:sessionLocalTz}));
-            sessionEnd.setHours(eh,em,0,0);
-            
-            // Convert to user timezone for display
-            const dispOpts={hour:'numeric',minute:'numeric',hour12:false,timeZone:tz};
-            const startTimeStr=sessionStart.toLocaleTimeString('en-US',dispOpts);
-            const endTimeStr=sessionEnd.toLocaleTimeString('en-US',dispOpts);
-
-            const [startH,startM]=startTimeStr.split(':').map(Number);
-            const [endH,endM]=endTimeStr.split(':').map(Number);
-            
-            return {name:sessName,start:startH*60+startM,end:endH*60+endM,color:s.color,startDisplay:startTimeStr,endDisplay:endTimeStr};
+            const { startDisplay, endDisplay, startMinutes, endMinutes } = getSessionTimesInUserTZ(s, tz);
+            return {name:sessName,start:startMinutes,end:endMinutes,color:s.color,startDisplay,endDisplay};
           }catch{
             return null;
           }
